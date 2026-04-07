@@ -8,12 +8,12 @@ Ever tried feeding a photo of a textbook page to an AI and got back a garbled me
 
 ## ✨ What It Does
 
-| Input | Method | Output |
-|-------|--------|--------|
-| 📸 Photos (JPG/PNG) | AI Vision Model | Clean Markdown |
-| 📑 PDFs | Local Marker OCR | Clean Markdown |
+| Input               | Method           | Output         |
+| ------------------- | ---------------- | -------------- |
+| 📸 Photos (JPG/PNG) | AI Vision Model  | Clean Markdown |
+| 📑 PDFs             | Local Marker OCR | Clean Markdown |
 
-- **Photos** are sent to a vision AI model (Gemini 2.5 Flash via [OpenRouter](https://openrouter.ai)) that *sees* the page layout — columns, sidebars, definition boxes, tables — and produces structured Markdown
+- **Photos** are sent to a vision AI model (Gemini 2.5 Flash via [OpenRouter](https://openrouter.ai)) that _sees_ the page layout — columns, sidebars, definition boxes, tables — and produces structured Markdown
 - **PDFs** are processed locally using [Marker](https://github.com/datalab-to/marker), no API call needed
 - Routing is **automatic**: drop in your files and Doc2MD picks the right method
 
@@ -21,7 +21,7 @@ Ever tried feeding a photo of a textbook page to an AI and got back a garbled me
 
 Traditional OCR reads text fragments and tries to reassemble them. On complex layouts (textbooks, multi-column pages, pages with sidebars and boxes), this produces **unreadable garbage** — reversed text, mixed-up columns, garbled fragments.
 
-A vision model actually *looks* at the page like a human would. It understands reading order, layout structure, and context. The difference is night and day. 🌙☀️
+A vision model actually _looks_ at the page like a human would. It understands reading order, layout structure, and context. The difference is night and day. 🌙☀️
 
 ## 🚀 Quick Start
 
@@ -35,7 +35,7 @@ cd doc2md
 ### 2. Install dependencies
 
 ```bash
-pip install -r requirements.txt
+uv sync
 ```
 
 > ⚠️ **First run will download ~2GB of ML models** (for Marker's PDF processing). This only happens once — subsequent runs use the cached models. If you only plan to process photos (not PDFs), the models are not downloaded at all.
@@ -60,13 +60,13 @@ OPENROUTER_API_KEY=sk-or-v1-your-key-here
 
 ```bash
 # Drop files in input/ and run
-python doc2md.py
+uv run doc2md.py
 
 # Or point at a specific file
-python doc2md.py "path/to/photo.jpg"
+uv run doc2md.py "path/to/photo.jpg"
 
 # Or a whole folder
-python doc2md.py input/ output/
+uv run doc2md.py input/ output/
 ```
 
 ## 📁 How Output Is Organized
@@ -94,7 +94,7 @@ input/
 ## 🛠️ All Options
 
 ```
-python doc2md.py [INPUT] [OUTPUT] [OPTIONS]
+uv run doc2md.py [INPUT] [OUTPUT] [OPTIONS]
 
 Arguments:
   INPUT               File or folder (default: ./input/)
@@ -114,27 +114,28 @@ Options:
 
 ```bash
 # Process everything in input/ with verbose output
-python doc2md.py --verbose
+uv run doc2md.py --verbose
 
 # Convert a single photo
-python doc2md.py "textbook_page.jpg"
+uv run doc2md.py "textbook_page.jpg"
 
 # Convert a PDF with LLM enhancement
-python doc2md.py "document.pdf" --use-llm
+uv run doc2md.py "document.pdf" --use-llm
 
 # Merge multiple chapter photos into one file
-python doc2md.py input/chapter3/ output/ --merge
+uv run doc2md.py input/chapter3/ output/ --merge
 
 # Force vision mode for a PDF (useful for scanned PDFs)
-python doc2md.py "scanned.pdf" --vision
+uv run doc2md.py "scanned.pdf" --vision
 
 # Use a different model
-python doc2md.py "page.jpg" --model google/gemini-2.5-flash
+uv run doc2md.py "page.jpg" --model google/gemini-2.5-flash
 ```
 
 ## 📋 Requirements
 
-- **Python 3.10+**
+- **[uv](https://docs.astral.sh/uv/)** — Python package manager (installs Python automatically if needed)
+- **Python 3.11+**
 - **OpenRouter API key** — for photo conversion and optional PDF LLM enhancement
 - **~2GB disk space** — for Marker's ML models (only downloaded if you process PDFs)
 - Works on **Windows, macOS, and Linux**
@@ -142,11 +143,11 @@ python doc2md.py "page.jpg" --model google/gemini-2.5-flash
 
 ## 📦 Dependencies
 
-| Package | Purpose |
-|---------|---------|
-| [marker-pdf](https://github.com/datalab-to/marker) | PDF to Markdown conversion (includes OCR, layout detection, table recognition) |
-| [python-dotenv](https://pypi.org/project/python-dotenv/) | Load API key from `.env` file |
-| [openai](https://pypi.org/project/openai/) | OpenRouter API client (installed with marker-pdf) |
+| Package                                                  | Purpose                                                                        |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| [marker-pdf](https://github.com/datalab-to/marker)       | PDF to Markdown conversion (includes OCR, layout detection, table recognition) |
+| [python-dotenv](https://pypi.org/project/python-dotenv/) | Load API key from `.env` file                                                  |
+| [openai](https://pypi.org/project/openai/)               | OpenRouter API client (installed with marker-pdf)                              |
 
 ## 🔑 About OpenRouter
 

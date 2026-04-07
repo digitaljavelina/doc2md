@@ -10,22 +10,22 @@ Doc2MD is a local Python CLI tool that converts photos (JPG/PNG) and PDFs into s
 
 ```bash
 # Setup
-pip install -r requirements.txt
+uv sync
 
 # Run — single file
-python doc2md.py input/seite1.jpg
+uv run doc2md.py input/seite1.jpg
 
 # Run — folder
-python doc2md.py input/ output/
+uv run doc2md.py input/ output/
 
 # Run with OCR forced (recommended for photos)
-python doc2md.py input/ output/ --force-ocr
+uv run doc2md.py input/ output/ --force-ocr
 
 # Run with LLM enhancement via OpenRouter
-python doc2md.py input/ output/ --use-llm
+uv run doc2md.py input/ output/ --use-llm
 
 # Merge multiple pages into one markdown file
-python doc2md.py input/kapitel3/ output/kapitel3.md --merge
+uv run doc2md.py input/kapitel3/ output/kapitel3.md --merge
 ```
 
 No test framework is configured yet.
@@ -59,7 +59,7 @@ openai_model = "google/gemini-2.5-flash"
 ## CLI Options
 
 ```
-python doc2md.py [INPUT] [OUTPUT] [OPTIONS]
+uv run doc2md.py [INPUT] [OUTPUT] [OPTIONS]
 
 INPUT               File or folder (default: ./input/)
 OUTPUT              Output folder or file (default: ./output/)
@@ -74,14 +74,11 @@ OUTPUT              Output folder or file (default: ./output/)
 
 ## Dependencies
 
-```
-marker-pdf
-python-dotenv
-```
+Managed via `uv` — see `pyproject.toml` for the dependency list and `uv.lock` for the lockfile.
 
 ## User Context
 
-The user (Kowi) is a low-code expert (KNIME), not a programmer. The tool must be simple to install (`pip install -r requirements.txt`) and run. Runs locally on Windows or Linux, CPU-only compatible.
+The user (Kowi) is a low-code expert (KNIME), not a programmer. The tool must be simple to install (`uv sync`) and run. Runs locally on Windows or Linux, CPU-only compatible.
 
 ## Typical Use Cases
 
