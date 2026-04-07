@@ -272,6 +272,43 @@ def convert_file(converter, filepath: Path, verbose: bool) -> str:
     return text
 
 
+def _resolve_ollama_model(base_url: str, preferred: str, verbose: bool) -> str:
+    """
+    Find the best matching Ollama model name.
+
+    The Ollama OpenAI-compatible endpoint requires the exact model ID
+    (e.g. "gemma4:e4b"), not just the short name ("gemma4"). This function
+    queries the available models and picks the one that starts with the
+    preferred name.
+    """
+    import urllib.request
+    import json
+
+    models_url = base_url.rstrip("/").removesuffix("/v1") + "/api/tags"
+    try:
+        with urllib.request.urlopen(models_url, timeout=5) as resp:
+            data = json.loads(resp.read())
+        names = [m["name"] for m in data.get("models", [])]
+    except Exception:
+        if verbose:
+            print(f"Warning: Could not query Ollama models at {models_url}. Using '{preferred}' as-is.")
+        return preferred
+
+    # Exact match first, then prefix match
+    for name in names:
+        if name == preferred:
+            return name
+    for name in names:
+        if name.startswith(preferred + ":") or name.startswith(preferred + "/"):
+            if verbose:
+                print(f"Resolved Ollama model: {preferred} -> {name}")
+            return name
+
+    if verbose:
+        print(f"Warning: No Ollama model matching '{preferred}' found. Available: {', '.join(names)}")
+    return preferred
+
+
 def main():
     """
     Main entry point: parse arguments, route files to the right converter,
@@ -309,11 +346,11 @@ def main():
     # Load .env file for API keys
     load_dotenv()
 
-    # ── Resolve provider settings ──────────────────────────────────────
+    # ── Resolve provider settings ───────��────────────────────────���─────
     if args.ollama:
         api_key = os.environ.get("OLLAMA_API_KEY", "ollama")
         base_url = args.ollama_url
-        model = args.model or "gemma4"
+        model = args.model or _resolve_ollama_model(base_url, "gemma4", args.verbose)
     else:
         api_key = os.environ.get("OPENROUTER_API_KEY", "")
         base_url = "https://openrouter.ai/api/v1"
