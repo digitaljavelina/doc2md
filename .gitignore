@@ -1,3 +1,6 @@
+# OS files
+.DS_Store
+
 # API keys
 .env
 .doc2md.env
