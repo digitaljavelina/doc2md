@@ -212,6 +212,23 @@ uv run doc2md.py "document.pdf" --ollama --use-llm
 
 We recommend **Gemma 4** (`gemma4`) as the default Ollama model because it supports vision, runs efficiently on consumer hardware (16GB+ RAM), and produces high-quality Markdown from document photos. You can use any other Ollama model with `--model`, but make sure it supports vision if you're converting images.
 
+## 🤖 Claude Code Skill
+
+If you use [Claude Code](https://claude.ai/code), Doc2MD includes a built-in skill. Just type:
+
+```
+/doc2md
+```
+
+The skill will:
+
+1. Ask which folder to convert
+2. Set up your API credentials securely (first time only — keys never enter the conversation)
+3. Run the conversion with the correct flags
+4. Move the `.md` files back alongside your originals
+
+Your credentials are stored in a `.doc2md.env` file in the target folder, so subsequent runs skip the setup step.
+
 ## 🤝 Built With AI
 
 This project was built using [Claude Code](https://claude.ai/code) (Anthropic's CLI coding agent) in a vibe coding session. The entire tool — from concept to working code — was developed through conversational AI pair programming.

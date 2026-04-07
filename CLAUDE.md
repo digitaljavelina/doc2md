@@ -18,11 +18,14 @@ uv run doc2md.py input/seite1.jpg
 # Run — folder
 uv run doc2md.py input/ output/
 
-# Run with OCR forced (recommended for photos)
-uv run doc2md.py input/ output/ --force-ocr
+# Run photos (vision mode is the default for images)
+uv run doc2md.py input/ output/
 
 # Run with LLM enhancement via OpenRouter
 uv run doc2md.py input/ output/ --use-llm
+
+# Force OCR for scanned PDFs (NOT recommended for photos)
+uv run doc2md.py input/ output/ --force-ocr
 
 # Merge multiple pages into one markdown file
 uv run doc2md.py input/kapitel3/ output/kapitel3.md --merge
@@ -42,7 +45,7 @@ Single-file CLI (`doc2md.py`) using **Marker** (`marker-pdf`) as the conversion 
 - Two providers: OpenRouter (default, cloud) and Ollama (`--ollama`, local)
 - OpenRouter: API key from env var `OPENROUTER_API_KEY`, default model `google/gemini-2.5-flash`
 - Ollama: optional API key from `OLLAMA_API_KEY`, default model `gemma4`, base URL `http://localhost:11434/v1`
-- Images (JPG/PNG) always get `force_ocr=True`; PDFs only when `--force-ocr` flag is set
+- Images (JPG/PNG) use **vision mode** by default (sent to the AI model for layout-aware conversion). `--force-ocr` forces them through Marker's OCR pipeline instead, which produces inferior results on photos — only use it for scanned PDFs.
 - LLM errors degrade gracefully — warn and continue without LLM
 - `--merge` combines files alphabetically with `---` separators
 - Output dir created automatically; output filenames mirror input with `.md` extension
@@ -67,7 +70,7 @@ uv run doc2md.py [INPUT] [OUTPUT] [OPTIONS]
 INPUT               File or folder (default: ./input/)
 OUTPUT              Output folder or file (default: ./output/)
 
---force-ocr         Force OCR (recommended for photos)
+--force-ocr         Force OCR via Marker (for scanned PDFs, NOT photos)
 --use-llm           Enable LLM post-processing (via OpenRouter or Ollama)
 --ollama            Use local Ollama model instead of OpenRouter
 --ollama-url URL    Ollama API base URL (default: http://localhost:11434/v1)
@@ -80,6 +83,10 @@ OUTPUT              Output folder or file (default: ./output/)
 ## Dependencies
 
 Managed via `uv` — see `pyproject.toml` for the dependency list and `uv.lock` for the lockfile.
+
+## Claude Code Skill
+
+The `/doc2md` skill (in `.claude/skills/doc2md/`) provides an interactive workflow for converting documents. It handles folder selection, secure API key setup (via `doc2md_setup.sh`), running the conversion with correct flags, and moving output files back to the source folder. Credentials are stored in `.doc2md.env` per folder.
 
 ## User Context
 
