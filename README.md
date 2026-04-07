@@ -102,9 +102,11 @@ Arguments:
 
 Options:
   --force-ocr         Use Marker OCR for images instead of vision mode
-  --use-llm           Enable LLM post-processing for PDFs (via OpenRouter)
+  --use-llm           Enable LLM post-processing for PDFs
   --vision            Force vision mode even for PDFs
-  --model MODEL       OpenRouter model (default: google/gemini-2.5-flash)
+  --ollama            Use local Ollama model instead of OpenRouter
+  --ollama-url URL    Ollama API base URL (default: http://localhost:11434/v1)
+  --model MODEL       Model name (default: gemma4 for Ollama, google/gemini-2.5-flash for OpenRouter)
   --merge             Merge all files into one Markdown file
   --lang LANG         OCR language (default: de,en)
   --verbose           Show detailed progress
@@ -130,13 +132,19 @@ uv run doc2md.py "scanned.pdf" --vision
 
 # Use a different model
 uv run doc2md.py "page.jpg" --model google/gemini-2.5-flash
+
+# Use a local Ollama model (e.g. Gemma 4)
+uv run doc2md.py "textbook_page.jpg" --ollama
+
+# Use Ollama with LLM post-processing for PDFs
+uv run doc2md.py "document.pdf" --ollama --use-llm
 ```
 
 ## 📋 Requirements
 
 - **[uv](https://docs.astral.sh/uv/)** — Python package manager (installs Python automatically if needed)
 - **Python 3.11+**
-- **OpenRouter API key** — for photo conversion and optional PDF LLM enhancement
+- **OpenRouter API key** — for photo conversion and optional PDF LLM enhancement (not needed with `--ollama`)
 - **~2GB disk space** — for Marker's ML models (only downloaded if you process PDFs)
 - Works on **Windows, macOS, and Linux**
 - Runs on **CPU** — no GPU required (GPU speeds things up if available)

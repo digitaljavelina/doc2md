@@ -38,9 +38,10 @@ Single-file CLI (`doc2md.py`) using **Marker** (`marker-pdf`) as the conversion 
 
 ### Critical Design Constraints
 
-- **LLM access exclusively via OpenRouter** — use `marker.services.openai.OpenAIService` with base URL `https://openrouter.ai/api/v1`. **Never use `marker.services.gemini` or `GOOGLE_API_KEY` directly.**
-- API key from env var `OPENROUTER_API_KEY` (only needed with `--use-llm`)
-- Default model: `google/gemini-2.5-flash`
+- **LLM access via OpenRouter or Ollama** — use `marker.services.openai.OpenAIService` with a configurable base URL. **Never use `marker.services.gemini` or `GOOGLE_API_KEY` directly.**
+- Two providers: OpenRouter (default, cloud) and Ollama (`--ollama`, local)
+- OpenRouter: API key from env var `OPENROUTER_API_KEY`, default model `google/gemini-2.5-flash`
+- Ollama: optional API key from `OLLAMA_API_KEY`, default model `gemma4`, base URL `http://localhost:11434/v1`
 - Images (JPG/PNG) always get `force_ocr=True`; PDFs only when `--force-ocr` flag is set
 - LLM errors degrade gracefully — warn and continue without LLM
 - `--merge` combines files alphabetically with `---` separators
@@ -49,11 +50,13 @@ Single-file CLI (`doc2md.py`) using **Marker** (`marker-pdf`) as the conversion 
 
 ### Marker LLM Configuration (when `--use-llm`)
 
+Both providers use the same OpenAI-compatible service — only the base URL and model change:
+
 ```python
 llm_service = "marker.services.openai.OpenAIService"
-openai_base_url = "https://openrouter.ai/api/v1"
-openai_api_key = os.environ["OPENROUTER_API_KEY"]
-openai_model = "google/gemini-2.5-flash"
+openai_base_url = base_url    # OpenRouter or Ollama URL
+openai_api_key = api_key      # from env var
+openai_model = model           # provider-specific default
 ```
 
 ## CLI Options
@@ -65,8 +68,10 @@ INPUT               File or folder (default: ./input/)
 OUTPUT              Output folder or file (default: ./output/)
 
 --force-ocr         Force OCR (recommended for photos)
---use-llm           Enable LLM post-processing via OpenRouter
---model MODEL       OpenRouter model (default: google/gemini-2.5-flash)
+--use-llm           Enable LLM post-processing (via OpenRouter or Ollama)
+--ollama            Use local Ollama model instead of OpenRouter
+--ollama-url URL    Ollama API base URL (default: http://localhost:11434/v1)
+--model MODEL       Model name (default: gemma4 for Ollama, google/gemini-2.5-flash for OpenRouter)
 --merge             Merge all input files into one markdown file
 --lang LANG         OCR language (default: de,en)
 --verbose           Verbose output

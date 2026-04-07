@@ -92,7 +92,8 @@ def collect_files(input_path: Path) -> list[Path]:
     sys.exit(1)
 
 
-def convert_vision(filepath: Path, api_key: str, model: str, verbose: bool) -> str:
+def convert_vision(filepath: Path, api_key: str, model: str, verbose: bool,
+                    base_url: str = "https://openrouter.ai/api/v1") -> str:
     """
     Convert an image file to Markdown using a vision AI model via OpenRouter.
 
@@ -125,10 +126,9 @@ def convert_vision(filepath: Path, api_key: str, model: str, verbose: bool) -> s
     suffix = filepath.suffix.lower()
     mime = "image/jpeg" if suffix in {".jpg", ".jpeg"} else "image/png"
 
-    # Use the OpenAI SDK pointed at OpenRouter's API endpoint
     client = openai.OpenAI(
         api_key=api_key,
-        base_url="https://openrouter.ai/api/v1",
+        base_url=base_url,
     )
 
     # Send the image + prompt to the vision model
@@ -155,7 +155,8 @@ def convert_vision(filepath: Path, api_key: str, model: str, verbose: bool) -> s
     return response.choices[0].message.content
 
 
-def build_converter(force_ocr: bool, langs: str, use_llm: bool, model: str, verbose: bool):
+def build_converter(force_ocr: bool, langs: str, use_llm: bool, model: str, verbose: bool,
+                    api_key: str = "", base_url: str = "https://openrouter.ai/api/v1"):
     """
     Build a Marker PdfConverter for local PDF-to-Markdown conversion.
 
@@ -194,16 +195,15 @@ def build_converter(force_ocr: bool, langs: str, use_llm: bool, model: str, verb
 
     # Configure LLM post-processing via OpenRouter if requested
     if use_llm:
-        api_key = os.environ.get("OPENROUTER_API_KEY", "")
         if not api_key:
-            print("Warning: OPENROUTER_API_KEY not set. Continuing without LLM.", file=sys.stderr)
+            print("Warning: API key not set. Continuing without LLM.", file=sys.stderr)
             use_llm = False
         else:
             config.update({
                 "use_llm": True,
                 "llm_service": "marker.services.openai.OpenAIService",
                 "openai_api_key": api_key,
-                "openai_base_url": "https://openrouter.ai/api/v1",
+                "openai_base_url": base_url,
                 "openai_model": model,
             })
 
@@ -292,8 +292,12 @@ def main():
                         help="Enable LLM post-processing via OpenRouter (Marker mode)")
     parser.add_argument("--vision", action="store_true",
                         help="Force vision mode for PDFs too")
-    parser.add_argument("--model", default="google/gemini-2.5-flash",
-                        help="OpenRouter model (default: google/gemini-2.5-flash)")
+    parser.add_argument("--ollama", action="store_true",
+                        help="Use a local Ollama model instead of OpenRouter")
+    parser.add_argument("--ollama-url", default="http://localhost:11434/v1",
+                        help="Ollama API base URL (default: http://localhost:11434/v1)")
+    parser.add_argument("--model", default=None,
+                        help="Model name (default: gemma4 for Ollama, google/gemini-2.5-flash for OpenRouter)")
     parser.add_argument("--merge", action="store_true",
                         help="Merge all input files into one Markdown file")
     parser.add_argument("--lang", default="de,en",
@@ -302,8 +306,18 @@ def main():
                         help="Verbose output")
     args = parser.parse_args()
 
-    # Load .env file for OPENROUTER_API_KEY
+    # Load .env file for API keys
     load_dotenv()
+
+    # ── Resolve provider settings ──────────────────────────────────────
+    if args.ollama:
+        api_key = os.environ.get("OLLAMA_API_KEY", "ollama")
+        base_url = args.ollama_url
+        model = args.model or "gemma4"
+    else:
+        api_key = os.environ.get("OPENROUTER_API_KEY", "")
+        base_url = "https://openrouter.ai/api/v1"
+        model = args.model or "google/gemini-2.5-flash"
 
     # ── Resolve paths and collect input files ───────────────────────────
     input_path = Path(args.input).resolve()
@@ -311,6 +325,8 @@ def main():
     files = collect_files(input_path)
 
     if args.verbose:
+        provider = f"Ollama ({base_url})" if args.ollama else "OpenRouter"
+        print(f"Provider: {provider}, Model: {model}")
         print(f"Files found: {len(files)}")
 
     # ── Route files to vision vs. Marker mode ───────────────────────────
@@ -334,8 +350,7 @@ def main():
         else:
             marker_files.append(f)
 
-    # Vision mode requires an OpenRouter API key
-    api_key = os.environ.get("OPENROUTER_API_KEY", "")
+    # Vision mode requires an API key (unless using Ollama)
     if vision_files and not api_key:
         print("Error: OPENROUTER_API_KEY not set. Required for images.", file=sys.stderr)
         sys.exit(1)
@@ -351,7 +366,8 @@ def main():
     if marker_files:
         converter, _ = build_converter(
             force_ocr=args.force_ocr, langs=args.lang,
-            use_llm=args.use_llm, model=args.model, verbose=args.verbose
+            use_llm=args.use_llm, model=model, verbose=args.verbose,
+            api_key=api_key, base_url=base_url,
         )
 
     # ── Convert all files ───────────────────────────────────────────────
@@ -360,7 +376,7 @@ def main():
     for filepath in files:
         try:
             if filepath in vision_files:
-                text = convert_vision(filepath, api_key, args.model, args.verbose)
+                text = convert_vision(filepath, api_key, model, args.verbose, base_url)
             else:
                 text = convert_file(converter, filepath, args.verbose)
             results.append((filepath, text))
