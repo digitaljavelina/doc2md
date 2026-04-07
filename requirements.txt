@@ -1,0 +1,2 @@
+marker-pdf
+python-dotenv

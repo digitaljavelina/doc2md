@@ -1,0 +1,12 @@
+# API keys
+.env
+
+# User files — keep folder structure, ignore contents
+input/*
+!input/.gitkeep
+output/*
+!output/.gitkeep
+
+# Python
+__pycache__/
+*.pyc
