@@ -7,6 +7,3 @@ dependencies = [
     "marker-pdf",
     "python-dotenv",
 ]
-
-[project.scripts]
-doc2md = "doc2md:main"
