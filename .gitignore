@@ -1,5 +1,6 @@
 # API keys
 .env
+.doc2md.env
 
 # User files — keep folder structure, ignore contents
 input/*
@@ -11,3 +12,8 @@ output/*
 __pycache__/
 *.pyc
 .venv/
+
+# output samples
+flash/*
+gemma/*
+original/*
